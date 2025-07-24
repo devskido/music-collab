@@ -49,12 +49,12 @@ const getAuthenticatedUser = async (request: Request) => {
 // Auth routes
 app.post('/make-server-549d2100/auth/signup', async (c) => {
   try {
-    const { email, password, name, role, skills } = await c.req.json()
+    const { email, password, name, username, role, skills } = await c.req.json()
     
     const { data, error } = await supabase.auth.admin.createUser({
       email,
       password,
-      user_metadata: { name, role, skills },
+      user_metadata: { name, username, role, skills },
       // Automatically confirm the user's email since an email server hasn't been configured.
       email_confirm: true
     })
@@ -68,6 +68,7 @@ app.post('/make-server-549d2100/auth/signup', async (c) => {
     await kv.set(`user:${data.user.id}`, {
       id: data.user.id,
       name,
+      username,
       role,
       email,
       skills: skills || [],
@@ -79,6 +80,9 @@ app.post('/make-server-549d2100/auth/signup', async (c) => {
       projects: [],
       createdAt: new Date().toISOString()
     })
+    
+    // Also store username mapping for login
+    await kv.set(`username:${username}`, data.user.id)
     
     return c.json({ user: data.user })
   } catch (error) {
