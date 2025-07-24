@@ -37,7 +37,7 @@ export const supabase = supabaseClient
 export const API_BASE_URL = `${supabaseUrl}/functions/v1/make-server-549d2100`
 
 // Auth helpers
-export const signUp = async (email: string, password: string, name: string, role: string, skills: string[]) => {
+export const signUp = async (email: string, password: string, name: string, username: string, role: string, skills: string[]) => {
   try {
     const response = await fetch(`${API_BASE_URL}/auth/signup`, {
       method: 'POST',
@@ -45,7 +45,7 @@ export const signUp = async (email: string, password: string, name: string, role
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${supabaseAnonKey}`
       },
-      body: JSON.stringify({ email, password, name, role, skills })
+      body: JSON.stringify({ email, password, name, username, role, skills })
     })
     
     const data = await response.json()

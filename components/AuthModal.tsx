@@ -53,12 +53,13 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
   const [error, setError] = useState('')
   
   // Sign In State
-  const [signInEmail, setSignInEmail] = useState('')
+  const [signInIdentifier, setSignInIdentifier] = useState('') // Can be email or username
   const [signInPassword, setSignInPassword] = useState('')
   
   // Sign Up State
   const [signUpEmail, setSignUpEmail] = useState('')
   const [signUpPassword, setSignUpPassword] = useState('')
+  const [signUpUsername, setSignUpUsername] = useState('')
   const [name, setName] = useState('')
   const [role, setRole] = useState('')
   const [selectedSkills, setSelectedSkills] = useState<string[]>([])
@@ -69,7 +70,19 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
     setError('')
     
     try {
-      await signIn(signInEmail, signInPassword)
+      // Check if the identifier is an email or username
+      const isEmail = signInIdentifier.includes('@')
+      
+      if (isEmail) {
+        await signIn(signInIdentifier, signInPassword)
+      } else {
+        // For username login, we need to implement a different approach
+        // This would require a backend endpoint to look up email by username
+        setError('Username login coming soon. Please use your email for now.')
+        setLoading(false)
+        return
+      }
+      
       onClose()
     } catch (err: any) {
       setError(err.message || 'Sign in failed')
@@ -83,14 +96,14 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
     setLoading(true)
     setError('')
     
-    if (!name.trim() || !role || selectedSkills.length === 0) {
+    if (!name.trim() || !signUpUsername.trim() || !role || selectedSkills.length === 0) {
       setError('Please fill in all required fields')
       setLoading(false)
       return
     }
     
     try {
-      await signUp(signUpEmail, signUpPassword, name, role, selectedSkills)
+      await signUp(signUpEmail, signUpPassword, name, signUpUsername, role, selectedSkills)
       // Now sign them in
       await signIn(signUpEmail, signUpPassword)
       onClose()
@@ -111,10 +124,11 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
 
   const resetForm = () => {
     setError('')
-    setSignInEmail('')
+    setSignInIdentifier('')
     setSignInPassword('')
     setSignUpEmail('')
     setSignUpPassword('')
+    setSignUpUsername('')
     setName('')
     setRole('')
     setSelectedSkills([])
@@ -144,12 +158,13 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
           <TabsContent value="signin" className="space-y-4">
             <form onSubmit={handleSignIn} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="signin-email">Email</Label>
+                <Label htmlFor="signin-identifier">Email or Username</Label>
                 <Input
-                  id="signin-email"
-                  type="email"
-                  value={signInEmail}
-                  onChange={(e) => setSignInEmail(e.target.value)}
+                  id="signin-identifier"
+                  type="text"
+                  placeholder="Enter your email or username"
+                  value={signInIdentifier}
+                  onChange={(e) => setSignInIdentifier(e.target.value)}
                   required
                 />
               </div>
@@ -180,6 +195,18 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
                   id="name"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
+                  required
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="signup-username">Username *</Label>
+                <Input
+                  id="signup-username"
+                  type="text"
+                  placeholder="Choose a unique username"
+                  value={signUpUsername}
+                  onChange={(e) => setSignUpUsername(e.target.value)}
                   required
                 />
               </div>
