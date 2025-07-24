@@ -39,44 +39,22 @@ export const API_BASE_URL = `${supabaseUrl}/functions/v1/make-server-549d2100`
 // Auth helpers
 export const signUp = async (email: string, password: string, name: string, username: string, role: string, skills: string[]) => {
   try {
-    // First, create the user with Supabase Auth
-    const { data: authData, error: authError } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          name,
-          username,
-          role,
-          skills
-        }
-      }
+    const response = await fetch(`${API_BASE_URL}/auth/signup`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${supabaseAnonKey}`
+      },
+      body: JSON.stringify({ email, password, name, username, role, skills })
     })
     
-    if (authError) {
-      throw authError
+    const data = await response.json()
+    
+    if (!response.ok) {
+      throw new Error(data.error || 'Signup failed')
     }
     
-    // If Edge Functions are deployed, also call the API
-    // This is optional and will fail silently if not available
-    try {
-      const response = await fetch(`${API_BASE_URL}/auth/signup`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${supabaseAnonKey}`
-        },
-        body: JSON.stringify({ email, password, name, username, role, skills })
-      })
-      
-      if (!response.ok) {
-        console.warn('Edge Function signup failed, but auth succeeded')
-      }
-    } catch (edgeFunctionError) {
-      console.warn('Edge Functions not available, using Supabase Auth only')
-    }
-    
-    return authData
+    return data
   } catch (error) {
     console.error('Signup error:', error)
     throw error
