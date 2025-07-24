@@ -45,17 +45,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    console.log('AuthContext initializing...');
+    
     // Initialize server
-    apiCall('/init').catch(console.error);
+    apiCall('/init').catch(error => {
+      console.error('Failed to initialize server:', error);
+      // Don't let this block the app from loading
+    });
 
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log('Session check complete:', session ? 'User logged in' : 'No user');
       setUser(session?.user ?? null);
       if (session?.user) {
         loadUserProfile(session.user.id);
       } else {
         setLoading(false);
       }
+    }).catch(error => {
+      console.error('Failed to get session:', error);
+      setLoading(false);
     });
 
     // Listen for auth changes

@@ -19,11 +19,20 @@ try {
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || (projectId ? `https://${projectId}.supabase.co` : '')
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || publicAnonKey
 
+let supabaseClient;
+
 if (!supabaseUrl || !supabaseAnonKey) {
   console.error('Missing Supabase configuration. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY environment variables.')
+  // Create a dummy client to prevent runtime errors
+  // This will fail gracefully when API calls are made
+  const dummyUrl = 'https://dummy.supabase.co'
+  const dummyKey = 'dummy-key'
+  supabaseClient = createClient(dummyUrl, dummyKey)
+} else {
+  supabaseClient = createClient(supabaseUrl, supabaseAnonKey)
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+export const supabase = supabaseClient
 
 export const API_BASE_URL = `${supabaseUrl}/functions/v1/make-server-549d2100`
 
