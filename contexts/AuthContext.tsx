@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { User } from '@supabase/supabase-js';
-import { supabase, apiRequest } from '../utils/supabase/client';
+import { supabase, apiCall } from '../utils/supabase/client';
 import { projectId } from '../utils/supabase/info';
 
 interface UserProfile {
@@ -46,7 +46,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     // Initialize server
-    apiRequest('/init').catch(console.error);
+    apiCall('/init').catch(console.error);
 
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -76,7 +76,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const loadUserProfile = async (userId: string) => {
     try {
-      const response = await apiRequest(`/profile/${userId}`);
+      const response = await apiCall(`/profile/${userId}`);
       setProfile(response.profile);
     } catch (error) {
       console.error('Failed to load user profile:', error);
@@ -87,7 +87,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signUp = async (email: string, password: string, profileData: Partial<UserProfile>) => {
     try {
-      const response = await apiRequest('/signup', {
+      const response = await apiCall('/signup', {
         method: 'POST',
         body: JSON.stringify({
           email,
