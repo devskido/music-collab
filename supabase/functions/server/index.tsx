@@ -9,6 +9,11 @@ const app = new Hono()
 app.use('*', cors())
 app.use('*', logger(console.log))
 
+// Health check endpoint
+app.get('/make-server-549d2100/health', (c) => {
+  return c.json({ status: 'ok', timestamp: new Date().toISOString() })
+})
+
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL')!,
   Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
